@@ -12,6 +12,7 @@ https://leadership.sakura.ne.jp/Leadership_Reflection2/login.php
 管理者
 - ID: Leader1
 - PW: Leader1
+
 一般
 - ID: member1/member2
 - PW: member1/member2
