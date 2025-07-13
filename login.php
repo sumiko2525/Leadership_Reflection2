@@ -89,11 +89,6 @@ if (isset($_SESSION['chk_ssid']) && $_SESSION['chk_ssid'] === session_id()) {
 
             <input type="submit" value="ログイン">
         </form>
-
-        <!-- トップページに戻るリンク -->
-        <div class="back-link">
-            <a href="index.php">トップページに戻る</a>
-        </div>
     </div>
 </body>
 </html>
