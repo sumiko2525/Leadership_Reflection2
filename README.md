@@ -10,8 +10,8 @@ https://leadership.sakura.ne.jp/Leadership_Reflection2/login.php
 
 ## ④アプリのログイン用IDまたはPassword（ある場合）
 管理者
-- ID: Leader1
-- PW: Leader1
+- ID: leader1
+- PW: leader1
 
 一般
 - ID: member1/member2
