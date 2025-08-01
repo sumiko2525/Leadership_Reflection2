@@ -1,6 +1,5 @@
 # ①課題名
-Lederhip ReflectionⓇ Ver1.1
-Lederhip ReflectionⓇ Ver1.2にバージョンアップしました。
+Lederhip ReflectionⓇ Ver1.2
 
 ## ②課題内容（どんな作品か）
 - リーダーが自分を振り返り、元気になっていただくアプリ
