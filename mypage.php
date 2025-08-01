@@ -150,5 +150,71 @@ $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="logout-link">
         <a class="btn" href="logout.php">ログアウト</a>
     </div>
+
+<?php
+// 日付ごとの平均活力・信頼を計算
+$dailyData = [];
+foreach ($notes as $note) {
+    $date = $note['log_date'];
+    if (!isset($dailyData[$date])) {
+        $dailyData[$date] = ['energy_sum' => 0, 'trust_sum' => 0, 'count' => 0];
+    }
+    $dailyData[$date]['energy_sum'] += (int)$note['energy_level'];
+    $dailyData[$date]['trust_sum'] += (int)$note['trust_level'];
+    $dailyData[$date]['count']++;
+}
+
+// Chart.js 用にデータを整形
+$labels = [];
+$energyData = [];
+$trustData = [];
+foreach ($dailyData as $date => $data) {
+    $labels[] = $date;
+    $energyData[] = round($data['energy_sum'] / $data['count'], 1);
+    $trustData[] = round($data['trust_sum'] / $data['count'], 1);
+}
+?>
+
+<!-- グラフ描画エリア -->
+<h2 style="text-align:center; margin-top:40px;">📈 活力と信頼の推移</h2>
+<canvas id="myChart" width="400" height="200"></canvas>
+
+<!-- Chart.jsのCDNを読み込み -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('myChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?= json_encode($labels) ?>,
+        datasets: [
+            {
+                label: '活力の平均',
+                data: <?= json_encode($energyData) ?>,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: false,
+                tension: 0.3
+            },
+            {
+                label: '信頼の平均',
+                data: <?= json_encode($trustData) ?>,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: false,
+                tension: 0.3
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true, max: 10 }
+        }
+    }
+});
+</script>
+
 </body>
 </html>

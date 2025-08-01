@@ -1,61 +1,42 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+session_start(); // セッション開始
+require_once('funcs.php'); // 共通関数読み込み
 
-// セッションを開始（ログイン状態を記録するために必要）
-session_start();
+// POSTデータ取得
+$lid = $_POST['lid'];
+$lpw = $_POST['lpw'];
 
-
-// POSTで受け取ったログインIDとパスワードを変数に代入
-$lid = $_POST['lid']; // フォームから送られてきたログインID
-$lpw = $_POST['lpw']; // フォームから送られてきたパスワード
-
-// 共通関数を使えるように読み込む（DB接続など）
-require_once('funcs.php');
-
-// DBに接続（funcs.phpに定義したdb_conn()を使う）
+// DB接続
 $pdo = db_conn();
 
-// SQL文を準備：入力されたID（lid）に一致し、かつ生存フラグ（life_flg=0）のユーザーを探す
+// 入力されたユーザーIDが存在するか確認
 $sql = 'SELECT * FROM lr_user WHERE lid = :lid AND life_flg = 0';
-
-// SQL実行の準備（プリペアドステートメント）
 $stmt = $pdo->prepare($sql);
-
-// :lid にフォームからのIDをバインド（文字列として）
 $stmt->bindValue(':lid', $lid, PDO::PARAM_STR);
+$stmt->execute();
+$val = $stmt->fetch(); // 1件取得
 
-// SQLを実行
-$status = $stmt->execute();
-
-// 実行に失敗した場合の処理
-if ($status == false) {
-    // SQLに問題があった場合はエラーメッセージを表示して終了
-    echo 'SQLエラー';
-    exit;
-}
-
-// 実行成功時、該当するユーザー情報を1件取得
-$val = $stmt->fetch();
-
-// 該当するユーザーが存在し、パスワードが一致するか確認
+// ユーザーが存在し、パスワードが一致するか確認
 if ($val && password_verify($lpw, $val['lpw'])) {
-    // 一致した場合：ログイン成功
+    // ✅ ログイン成功
+    session_regenerate_id(true); // セッションIDを再生成（セキュリティ対策）
 
-    // セッションIDを再発行してセッションに保存（セキュリティ対策）
-    session_regenerate_id(true);
+    // ✅ セッション変数にユーザー情報を保存
+    $_SESSION['chk_ssid']   = session_id();
+    $_SESSION['user_id']    = $val['id'];
+    $_SESSION['user_name']  = $val['name'];
+    $_SESSION['kanri_flg']  = $val['kanri_flg'];
 
-    // ログイン情報をセッションに保存
-    $_SESSION['chk_ssid'] = session_id();
-    $_SESSION['user_id'] = $val['id'];         // DB上のユーザーID
-    $_SESSION['user_name'] = $val['name'];     // 表示用ユーザー名
-    $_SESSION['kanri_flg'] = $val['kanri_flg']; // 管理者権限（任意）
-
-    // ログイン成功したのでトップページへリダイレクト
-    header('Location: index.php');
+    // ✅ 管理者かどうかで遷移先を分岐
+    if ($_SESSION['kanri_flg'] == 1) {
+        header('Location: view.php');   // 管理者 → 全体の一覧ページ
+    } else {
+        header('Location: mypage.php'); // 一般ユーザー → 自分専用ページ
+    }
     exit();
+
 } else {
-    // ログイン失敗時（IDが存在しない or パスワードが違う）
+    // ❌ ログイン失敗
     echo 'ログインに失敗しました';
+    echo '<br><a href="login.php">ログイン画面に戻る</a>';
 }
